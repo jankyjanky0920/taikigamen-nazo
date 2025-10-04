@@ -1,0 +1,219 @@
+/* --------------------------
+   ベーススタイル
+   -------------------------- */
+body {
+  font-family: "Arial", sans-serif;
+  text-align: center;
+  background: #f9f9f9;
+  margin: 0;
+  padding: 20px;
+}
+
+h1, h2 {
+  color: #333;
+}
+
+/* --------------------------
+   安全対策：幅の計算を安定させる
+   -------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* --------------------------
+   クイズ一覧レイアウト
+   -------------------------- */
+#quiz-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px; /* カード間の余白 */
+  padding: 0;
+  margin: 0 auto;
+  max-width: 1100px; /* 任意：中央の横幅上限 */
+}
+
+/* カード本体：padding を含めた幅指定にする */
+.quiz-card {
+  flex: 0 0 200px;    /* 幅固定（縮小はするが拡大しない）*/
+  max-width: 200px;
+  margin: 15px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+  overflow: hidden;   /* はみ出し防止 */
+}
+
+/* サムネイル画像はカードの内側に収める */
+.thumb {
+  display: block;
+  width: 100%;
+  height: 120px;      /* サムネイルの高さを揃える */
+  object-fit: cover;  /* 見栄えを揃える */
+  border-radius: 5px;
+}
+
+/* タイトルなど */
+.quiz-card h3 {
+  margin: 8px 0 6px;
+  font-size: 16px;
+  color: #333;
+}
+
+/* リンクボタン（もしあれば） */
+.quiz-card a {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: #0077ff;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.quiz-card a:hover {
+  background: #005bcc;
+}
+
+/* --------------------------
+   ボタン共通
+   -------------------------- */
+button {
+  margin: 5px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  background: #0077ff;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #005bcc;
+}
+
+button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* --------------------------
+   結果画像
+   -------------------------- */
+#result img {
+  max-width: 200px;
+  margin-top: 10px;
+}
+
+/* --------------------------
+   問題画像
+   -------------------------- */
+.problem-img {
+  width: 100%;          /* 枠の横幅にフィット */
+  max-width: 600px;     /* でかすぎないよう最大幅を制限 */
+  max-height: 80vh;     /* 画面高さの 80% 以内 */
+  border-radius: 8px;
+  object-fit: contain;  /* 枠からはみ出さず収める */
+  display: block;
+  margin: 0 auto 15px;  /* 中央寄せ + 下に余白 */
+}
+
+/* --------------------------
+   モーダル共通スタイル
+   -------------------------- */
+#modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+#modal-overlay.hidden {
+  display: none;
+}
+
+#modal-content {
+  background: #fff;
+  padding: 20px;
+  max-width: 90%;
+  width: 500px;
+  border-radius: 10px;
+  position: relative;
+  text-align: center;
+  animation: popup 0.3s ease;
+}
+
+#modal-content h3 {
+  margin-top: 0;
+}
+
+#modal-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.answer-img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+
+/* --------------------------
+   アニメーション
+   -------------------------- */
+@keyframes popup {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* --------------------------
+   レスポンシブ対応
+   -------------------------- */
+@media (max-width: 480px) {
+  .quiz-card {
+    flex: 0 0 calc(50% - 24px);
+    max-width: calc(50% - 24px);
+  }
+
+  .thumb {
+    height: 90px;
+  }
+}
+
+.dev-status {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.dev-status select {
+  margin-left: 5px;
+  padding: 3px;
+}
+
+.dev-status button {
+  margin-left: 5px;
+  background: #444;
+  color: #fff;
+  padding: 3px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.dev-status button:hover {
+  background: #666;
+}
