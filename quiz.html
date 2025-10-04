@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>謎解き挑戦</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="data.js"></script>
+</head>
+<body>
+  <div id="quiz-container"></div>
+
+  <!-- ✅ モーダル -->
+  <div id="modal-overlay" class="hidden">
+    <div id="modal-content">
+      <span id="modal-close">&times;</span>
+      <div id="modal-body"></div>
+      <button id="back-to-list-modal">← 一覧に戻る</button>
+    </div>
+  </div>
+
+  <script>
+    function isDevEnabled() {
+      return localStorage.getItem("devMode") === "true";
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const quizId = parseInt(params.get("id"));
+    const isDevMode = isDevEnabled();
+    const quiz = quizzes.find(q => q.id === quizId);
+    const container = document.getElementById("quiz-container");
+    const modalOverlay = document.getElementById("modal-overlay");
+    const modalBody = document.getElementById("modal-body");
+    const modalClose = document.getElementById("modal-close");
+    const backToListModal = document.getElementById("back-to-list-modal");
+
+    // ✅ モーダル表示関数
+    function showModal(content, options = {}) {
+      modalBody.innerHTML = content;
+      backToListModal.style.display = options.hideBackButton ? "none" : "inline-block";
+      modalOverlay.classList.remove("hidden");
+    }
+
+    function hideModal() {
+      modalOverlay.classList.add("hidden");
+    }
+
+    modalClose.onclick = hideModal;
+    modalOverlay.onclick = e => {
+      if (e.target === modalOverlay) hideModal();
+    };
+    backToListModal.onclick = () => {
+      window.location.href = "index.html";
+    };
+
+    // ✅ ステータス取得
+    function getCurrentStatus(quiz) {
+      const saved = localStorage.getItem(`status_${quiz.id}`);
+      if (saved) return saved;
+
+      const startTime = new Date(quiz.startTime);
+      const now = new Date();
+      const diff = now - startTime;
+
+      if (diff < 0) return "非公開";
+      if (diff < 60 * 60 * 1000) return "出題";
+      if (diff < 24 * 60 * 60 * 1000) return "出題経過";
+      return "公開";
+    }
+
+    function setStatus(quiz, newStatus) {
+      localStorage.setItem(`status_${quiz.id}`, newStatus);
+    }
+
+    // ✅ クイズ描画
+    function renderQuiz(status) {
+      if (status === "非公開") {
+        container.innerHTML = "<p>この問題はまだ非公開です。</p>";
+        return;
+      }
+
+      // 各ボタンの有効化条件
+      const checkDisabled =
+        status === "非公開" ? "disabled" : ""; // 全てで可能
+      const hintDisabled =
+        status === "出題" ? "disabled" : ""; // 出題経過・公開で可能
+      const giveupDisabled =
+        status === "公開" ? "" : "disabled"; // 公開のみ可能
+
+      container.innerHTML = `
+        <h2>${quiz.title}</h2>
+        <img src="${quiz.thumbnail}" alt="問題画像" class="problem-img">
+
+        <input type="text" id="answer-input" placeholder="答えを入力">
+        <button id="check-btn" ${checkDisabled}>答え合わせ</button>
+        <button id="hint-btn" ${hintDisabled}>ヒントを見る</button>
+        <button id="giveup-btn" ${giveupDisabled}>諦める</button>
+
+        <div style="margin-top:20px;">
+          <button id="back-to-list">← 問題一覧に戻る</button>
+        </div>
+      `;
+
+      document.getElementById("back-to-list").onclick = () => {
+        window.location.href = "index.html";
+      };
+
+      const checkBtn = document.getElementById("check-btn");
+      const hintBtn = document.getElementById("hint-btn");
+      const giveupBtn = document.getElementById("giveup-btn");
+
+      // ✅ 答え合わせ
+      if (checkBtn) {
+        checkBtn.onclick = () => {
+          const userAnswer = document.getElementById("answer-input").value.trim();
+
+          const normalize = str =>
+            str.toLowerCase()
+              .replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+              .replace(/\s+/g, "");
+
+          const normalizedUserAnswer = normalize(userAnswer);
+          const isCorrect = quiz.answers.some(ans => normalize(ans) === normalizedUserAnswer);
+
+          if (isCorrect) {
+            showModal(`
+              <h3>✅ 正解！</h3>
+              <p>${quiz.answerText}</p>
+              <img src="${quiz.answerImage}" alt="答え画像" class="answer-img">
+            `);
+          } else {
+            showModal(`<h3>❌ 不正解！</h3><p>もう一度挑戦してみよう！</p>`, { hideBackButton: true });
+          }
+        };
+      }
+
+      // ✅ 💡ヒント（一覧ボタン非表示）
+      if (hintBtn && !hintBtn.disabled) {
+        hintBtn.onclick = () => {
+          showModal(`
+            <h3>💡 ヒント</h3>
+            <p>${quiz.hint}</p>
+          `, { hideBackButton: true });
+        };
+      }
+
+      // ✅ 諦める（一覧ボタン表示）
+      if (giveupBtn && !giveupBtn.disabled) {
+        giveupBtn.onclick = () => {
+          showModal(`
+            <h3>😢 諦めましたね…</h3>
+            <p>${quiz.answerText}</p>
+            <img src="${quiz.answerImage}" alt="答え画像" class="answer-img">
+          `);
+        };
+      }
+    }
+
+    // ✅ 初期化
+    if (quiz) {
+      let status = getCurrentStatus(quiz);
+      renderQuiz(status);
+
+      // ✅ 開発者モード
+      if (isDevMode) {
+        const devPanel = document.createElement("div");
+        devPanel.style.margin = "15px";
+        devPanel.style.padding = "10px";
+        devPanel.style.border = "2px dashed #888";
+        devPanel.style.background = "#f0f0f0";
+        devPanel.innerHTML = `
+          <strong>🛠 開発者モード</strong><br>
+          現在ステータス: <span id="dev-status">${status}</span><br>
+          <select id="dev-status-select">
+            <option value="非公開">非公開</option>
+            <option value="出題">出題</option>
+            <option value="出題経過">出題経過</option>
+            <option value="公開">公開</option>
+          </select>
+          <button id="dev-apply">変更</button>
+          <button id="dev-reset">リセット</button>
+        `;
+        document.body.prepend(devPanel);
+
+        document.getElementById("dev-apply").onclick = () => {
+          const newStatus = document.getElementById("dev-status-select").value;
+          setStatus(quiz, newStatus);
+          status = newStatus;
+          document.getElementById("dev-status").textContent = status;
+          alert(`ステータスを「${status}」に変更しました`);
+          renderQuiz(status);
+        };
+
+        document.getElementById("dev-reset").onclick = () => {
+          localStorage.removeItem(`status_${quiz.id}`);
+          alert("ステータスをリセットしました（時間経過ルールに戻ります）");
+          status = getCurrentStatus(quiz);
+          renderQuiz(status);
+          document.getElementById("dev-status").textContent = status;
+        };
+      }
+    } else {
+      container.innerHTML = "<p>問題が見つかりません。</p>";
+    }
+  </script>
+</body>
+</html>
