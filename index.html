@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>謎解き一覧</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="data.js"></script>
+</head>
+<body>
+  <h1 id="site-title">謎解き答え合わせサイト</h1>
+  <div id="quiz-list"></div>
+
+  <script>
+    const listContainer = document.getElementById("quiz-list");
+
+    // ✅ 開発者モード制御
+    let tapCount = 0;
+    let devMode = localStorage.getItem("devMode") === "true";
+
+    function toggleDevMode(enable) {
+      devMode = enable;
+      localStorage.setItem("devMode", enable ? "true" : "false");
+      alert(enable ? "✅ 開発者モードが有効になりました" : "🚪 開発者モードを終了しました");
+      renderList();
+    }
+
+    document.getElementById("site-title").addEventListener("click", () => {
+      tapCount++;
+      if (tapCount >= 5) {
+        if (devMode) {
+          toggleDevMode(false);
+        } else {
+          const pw = prompt("開発者モードパスワードを入力してください:");
+          if (pw === "hahaha") {
+            toggleDevMode(true);
+          } else {
+            alert("パスワードが違います");
+          }
+        }
+        tapCount = 0;
+      }
+    });
+
+    // ✅ ステータス取得関数（quiz.htmlと共通仕様）
+    function getCurrentStatus(quiz) {
+      const saved = localStorage.getItem(`status_${quiz.id}`);
+      if (saved) return saved;
+
+      const startTime = new Date(quiz.startTime);
+      const now = new Date();
+      const diff = now - startTime;
+
+      if (diff < 0) return "非公開";
+      if (diff < 60 * 60 * 1000) return "出題";
+      if (diff < 24 * 60 * 60 * 1000) return "出題経過";
+      return "公開";
+    }
+
+    // ✅ ステータス保存
+    function setStatus(quiz, newStatus) {
+      localStorage.setItem(`status_${quiz.id}`, newStatus);
+    }
+
+    // ✅ クイズ一覧描画
+    function renderList() {
+      listContainer.innerHTML = ""; // 初期化
+
+      quizzes.forEach(q => {
+        const status = getCurrentStatus(q);
+
+        // 🔸 非公開はスキップ（ただし開発者モードなら表示）
+        if (status === "非公開" && !devMode) return;
+
+        const card = document.createElement("div");
+        card.className = "quiz-card";
+
+        // 🔧 開発者モード用ステータス管理UI
+        let devControls = "";
+        if (devMode) {
+          devControls = `
+            <div class="dev-status">
+              <label>状態:</label>
+              <select id="status-${q.id}">
+                <option value="非公開" ${status === "非公開" ? "selected" : ""}>非公開</option>
+                <option value="出題" ${status === "出題" ? "selected" : ""}>出題</option>
+                <option value="出題経過" ${status === "出題経過" ? "selected" : ""}>出題経過</option>
+                <option value="公開" ${status === "公開" ? "selected" : ""}>公開</option>
+              </select>
+              <button data-id="${q.id}" class="apply-status">変更</button>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <img src="${q.thumbnail}" alt="${q.title}" class="thumb">
+          <h3>${q.title}</h3>
+          ${
+            status === "非公開" && !devMode
+              ? ""
+              : `<a href="quiz.html?id=${q.id}">挑戦する</a>`
+          }
+          ${devMode ? `<p style="color:red;">[現在: ${status}]</p>${devControls}` : ""}
+        `;
+        listContainer.appendChild(card);
+      });
+
+      // ✅ 開発者モードのステータス変更処理
+      if (devMode) {
+        document.querySelectorAll(".apply-status").forEach(btn => {
+          btn.addEventListener("click", e => {
+            const id = parseInt(e.target.getAttribute("data-id"));
+            const quiz = quizzes.find(q => q.id === id);
+            const select = document.getElementById(`status-${id}`);
+            const newStatus = select.value;
+            setStatus(quiz, newStatus);
+            alert(`🛠 ${quiz.title} のステータスを「${newStatus}」に変更しました`);
+            renderList(); // 再描画
+          });
+        });
+      }
+
+      if (!devMode && listContainer.children.length === 0) {
+        listContainer.innerHTML = "<p>現在公開中の問題はありません。</p>";
+      }
+    }
+
+    // ✅ 初期表示
+    renderList();
+  </script>
+</body>
+</html>
