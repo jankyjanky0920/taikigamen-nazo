@@ -12,8 +12,6 @@
 
   <script>
     const listContainer = document.getElementById("quiz-list");
-
-    // ✅ 開発者モード制御
     let tapCount = 0;
     let devMode = localStorage.getItem("devMode") === "true";
 
@@ -41,7 +39,6 @@
       }
     });
 
-    // ✅ ステータス取得関数（quiz.htmlと共通仕様）
     function getCurrentStatus(quiz) {
       const saved = localStorage.getItem(`status_${quiz.id}`);
       if (saved) return saved;
@@ -56,25 +53,19 @@
       return "公開";
     }
 
-    // ✅ ステータス保存
     function setStatus(quiz, newStatus) {
       localStorage.setItem(`status_${quiz.id}`, newStatus);
     }
 
-    // ✅ クイズ一覧描画
     function renderList() {
-      listContainer.innerHTML = ""; // 初期化
-
+      listContainer.innerHTML = "";
       quizzes.forEach(q => {
         const status = getCurrentStatus(q);
-
-        // 🔸 非公開はスキップ（ただし開発者モードなら表示）
         if (status === "非公開" && !devMode) return;
 
         const card = document.createElement("div");
         card.className = "quiz-card";
 
-        // 🔧 開発者モード用ステータス管理UI
         let devControls = "";
         if (devMode) {
           devControls = `
@@ -104,7 +95,6 @@
         listContainer.appendChild(card);
       });
 
-      // ✅ 開発者モードのステータス変更処理
       if (devMode) {
         document.querySelectorAll(".apply-status").forEach(btn => {
           btn.addEventListener("click", e => {
@@ -114,7 +104,7 @@
             const newStatus = select.value;
             setStatus(quiz, newStatus);
             alert(`🛠 ${quiz.title} のステータスを「${newStatus}」に変更しました`);
-            renderList(); // 再描画
+            renderList();
           });
         });
       }
@@ -124,7 +114,6 @@
       }
     }
 
-    // ✅ 初期表示
     renderList();
   </script>
 </body>
