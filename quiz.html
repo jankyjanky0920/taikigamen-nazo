@@ -54,19 +54,55 @@
       localStorage.setItem(`status_${quiz.id}`, newStatus);
     }
 
-    function exportStatusJSON() {
+    async function exportStatusJSON() {
       const allStatuses = {};
       quizzes.forEach(q => {
         const s = localStorage.getItem(`status_${q.id}`);
         if (s) allStatuses[q.id] = s;
       });
-      const blob = new Blob([JSON.stringify(allStatuses, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "status.json";
-      a.click();
-      URL.revokeObjectURL(url);
+
+      const jsonData = JSON.stringify(allStatuses, null, 2);
+      const token = localStorage.getItem("githubToken");
+      if (!token) {
+        alert("⚠️ GitHubトークンが登録されていません。先に設定してください。");
+        return;
+      }
+
+      const owner = "jankyjanky0920";
+      const repo = "janky_taikinazo_website";
+      const path = "status.json";
+
+      try {
+        const getRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+          headers: { Authorization: `token ${token}` }
+        });
+        const fileData = await getRes.json();
+        const sha = fileData.sha;
+
+        const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `token ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: "Update status.json from website",
+            content: btoa(unescape(encodeURIComponent(jsonData))),
+            sha: sha
+          })
+        });
+
+        if (updateRes.ok) {
+          alert("✅ status.json をGitHubにアップロードしました！");
+        } else {
+          const err = await updateRes.json();
+          console.error(err);
+          alert("❌ アップロードに失敗しました。コンソールを確認してください。");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("❌ 通信中にエラーが発生しました。");
+      }
     }
 
     const modalOverlay = document.getElementById("modal-overlay");
@@ -94,6 +130,7 @@
 
     function renderQuiz(status, quiz) {
       const container = document.getElementById("quiz-container");
+
       if (status === "非公開") {
         container.innerHTML = "<p>この問題はまだ非公開です。</p>";
         return;
@@ -183,6 +220,7 @@
         <button id="dev-apply">変更</button>
         <button id="dev-reset">リセット</button>
         <button id="export-json">💾 JSONエクスポート</button>
+        <button id="set-token">🔑 GitHubトークン設定</button>
       `;
       document.body.prepend(devPanel);
 
@@ -216,10 +254,23 @@
 
       const status = await getCurrentStatus(quiz);
       renderQuiz(status, quiz);
+
       if (isDevMode) showDevPanel(quiz, status);
     }
 
     window.addEventListener("DOMContentLoaded", initQuiz);
+  </script>
+
+  <script>
+  document.addEventListener("click", e => {
+    if (e.target.id === "set-token") {
+      const input = prompt("GitHubの個人アクセストークンを入力してください：");
+      if (input) {
+        localStorage.setItem("githubToken", input);
+        alert("✅ トークンを保存しました！");
+      }
+    }
+  });
   </script>
 </body>
 </html>
