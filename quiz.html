@@ -54,6 +54,7 @@
       localStorage.setItem(`status_${quiz.id}`, newStatus);
     }
 
+    /* ✅ GitHub自動アップロード版エクスポート関数（コードB統合） */
     async function exportStatusJSON() {
       const allStatuses = {};
       quizzes.forEach(q => {
@@ -69,7 +70,7 @@
       }
 
       const owner = "jankyjanky0920";
-      const repo = "janky_taikinazo_website";
+      const repo = "jankyjanky0920/taikigamen-nazo";
       const path = "status.json";
 
       try {
@@ -220,7 +221,6 @@
         <button id="dev-apply">変更</button>
         <button id="dev-reset">リセット</button>
         <button id="export-json">💾 JSONエクスポート</button>
-        <button id="set-token">🔑 GitHubトークン設定</button>
       `;
       document.body.prepend(devPanel);
 
@@ -259,18 +259,6 @@
     }
 
     window.addEventListener("DOMContentLoaded", initQuiz);
-  </script>
-
-  <script>
-  document.addEventListener("click", e => {
-    if (e.target.id === "set-token") {
-      const input = prompt("GitHubの個人アクセストークンを入力してください：");
-      if (input) {
-        localStorage.setItem("githubToken", input);
-        alert("✅ トークンを保存しました！");
-      }
-    }
-  });
   </script>
 </body>
 </html>
