@@ -1,6 +1,3 @@
-/* --------------------------
-   ベーススタイル
-   -------------------------- */
 body {
   font-family: "Arial", sans-serif;
   text-align: center;
@@ -13,31 +10,24 @@ h1, h2 {
   color: #333;
 }
 
-/* --------------------------
-   安全対策：幅の計算を安定させる
-   -------------------------- */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* --------------------------
-   クイズ一覧レイアウト
-   -------------------------- */
 #quiz-list {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 15px; /* カード間の余白 */
+  gap: 15px;
   padding: 0;
   margin: 0 auto;
-  max-width: 1100px; /* 任意：中央の横幅上限 */
+  max-width: 1100px;
 }
 
-/* カード本体：padding を含めた幅指定にする */
 .quiz-card {
-  flex: 0 0 200px;    /* 幅固定（縮小はするが拡大しない）*/
+  flex: 0 0 200px;
   max-width: 200px;
   margin: 15px;
   padding: 10px;
@@ -45,26 +35,23 @@ h1, h2 {
   border: 1px solid #ddd;
   border-radius: 8px;
   text-align: center;
-  overflow: hidden;   /* はみ出し防止 */
+  overflow: hidden;
 }
 
-/* サムネイル画像はカードの内側に収める */
 .thumb {
   display: block;
   width: 100%;
-  height: 120px;      /* サムネイルの高さを揃える */
-  object-fit: cover;  /* 見栄えを揃える */
+  height: 120px;
+  object-fit: cover;
   border-radius: 5px;
 }
 
-/* タイトルなど */
 .quiz-card h3 {
   margin: 8px 0 6px;
   font-size: 16px;
   color: #333;
 }
 
-/* リンクボタン（もしあれば） */
 .quiz-card a {
   display: inline-block;
   margin-top: 6px;
@@ -79,9 +66,6 @@ h1, h2 {
   background: #005bcc;
 }
 
-/* --------------------------
-   ボタン共通
-   -------------------------- */
 button {
   margin: 5px;
   padding: 8px 12px;
@@ -103,30 +87,21 @@ button:disabled {
   opacity: 0.8;
 }
 
-/* --------------------------
-   結果画像
-   -------------------------- */
 #result img {
   max-width: 200px;
   margin-top: 10px;
 }
 
-/* --------------------------
-   問題画像
-   -------------------------- */
 .problem-img {
-  width: 100%;          /* 枠の横幅にフィット */
-  max-width: 600px;     /* でかすぎないよう最大幅を制限 */
-  max-height: 80vh;     /* 画面高さの 80% 以内 */
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
   border-radius: 8px;
-  object-fit: contain;  /* 枠からはみ出さず収める */
+  object-fit: contain;
   display: block;
-  margin: 0 auto 15px;  /* 中央寄せ + 下に余白 */
+  margin: 0 auto 15px;
 }
 
-/* --------------------------
-   モーダル共通スタイル
-   -------------------------- */
 #modal-overlay {
   position: fixed;
   top: 0; left: 0;
@@ -172,17 +147,11 @@ button:disabled {
   margin-top: 10px;
 }
 
-/* --------------------------
-   アニメーション
-   -------------------------- */
 @keyframes popup {
   from { transform: scale(0.8); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
 
-/* --------------------------
-   レスポンシブ対応
-   -------------------------- */
 @media (max-width: 480px) {
   .quiz-card {
     flex: 0 0 calc(50% - 24px);
